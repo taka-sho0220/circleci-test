@@ -35,7 +35,6 @@ class UserRegisterTest extends TestCase
 	])
 		->assertStatus(302);
 	$this->assertDatabaseHas('users',['email' => $email]);
-
     }
 
 
