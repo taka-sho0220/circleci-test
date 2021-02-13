@@ -13,25 +13,25 @@ jobs: # 一連のステップ
       - run: sudo composer self-update
       - restore_cache: # `composer.lock` が変更されていない場合に、依存関係キャッシュを復元する特別なステップ
           keys:
-            - composer-v1-{{ checksum "www/html/laravel/composer.lock" }}
+            - composer-v1-{{ checksum "circleci_test/www/html/laravel/composer.lock" }}
             # 正確な一致が見つからない場合は、最新のキャッシュの使用にフォールバックします (https://circleci.com/ja/docs/2.0/caching/ を参照)
             - composer-v1-
       # - run: composer install -n --prefer-dist
       - save_cache: # `composer.lock` キャッシュ キー テンプレートを使用して依存関係キャッシュを保存する特別なステップ
-          key: composer-v1-{{ checksum "www/html/laravel/composer.lock" }}
+          key: composer-v1-{{ checksum "circleci_test/www/html/laravel/composer.lock" }}
           paths:
             - vendor
       - restore_cache: # `package.json` が変更されていない場合に、依存関係キャッシュを復元する特別なステップ
           keys:
-            - node-v1-{{ checksum "www/html/laravel/package-lock.json" }}
+            - node-v1-{{ checksum "circleci_test/www/html/laravel/package-lock.json" }}
             # 正確な一致が見つからない場合は、最新のキャッシュの使用にフォールバックします (https://circleci.com/ja/docs/2.0/caching/ を参照)
             - node-v1-
       - run: yarn install
       - save_cache: # `package.json` キャッシュ キー テンプレートを使用して依存関係キャッシュを保存する特別なステップ
-          key: node-v1-{{ checksum "www/html/laravel/package-lock.json" }}
+          key: node-v1-{{ checksum "circleci_test/www/html/laravel/package-lock.json" }}
           paths:
             - node_modules
-      # - run: touch storage/testing.mysql
+      - run: touch storage/testing.mysql
       - run: php artisan migrate --env=testing --database=circleci_test --force
       - run: ./vendor/bin/phpunit build
       - run: ./vendor/bin/phpunit run
