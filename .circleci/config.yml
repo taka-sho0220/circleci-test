@@ -1,40 +1,37 @@
-version: 2
-jobs:
-  build:
-    docker:
-      - image: circleci/php:7.4-node-browsers
-        environment:
-          - APP_DEBUG: true
-          - APP_ENV: testing
-          - DB_CONNECTION: mysql
-          - DB_DATABASE: circleci_test
-          - DB_USERNAME: root
+version: 2 # CircleCI 2.0 を使用します
 
-      - image: circleci/mysql:5.7-ram
-        environment:
-          - MYSQL_ALLOW_EMPTY_PASSWORD: secret
-          - MYSQL_DATABASE: circleci_test
+jobs: # 一連のステップ
+  build: # ワークフローを使用しない実行では、エントリポイントとして `build` ジョブが必要です
+    docker: # Docker でステップを実行します
 
-    steps:
-      - checkout
-
-      - run: sudo apt update
-      - run: sudo docker-php-ext-install pdo_mysql
-
-      - restore_cache:
+      - image: circleci/php:7.4-node-browsers # このイメージをすべての `steps` が実行されるプライマリ コンテナとして使用します
+    working_directory: www/html/laravel # ステップが実行されるディレクトリ
+    steps: # 実行可能コマンドの集合
+      - checkout # ソース コードを作業ディレクトリにチェックアウトする特別なステップ
+      - run: sudo apt install -y libsqlite3-dev zlib1g-dev
+      - run: sudo docker-php-ext-install zip
+      - run: sudo composer self-update
+      - restore_cache: # `composer.lock` が変更されていない場合に、依存関係キャッシュを復元する特別なステップ
           keys:
-            - v1-dependencies-{{ checksum "www/html/laravel/composer.json" }}
-            - v1-dependencies-
-
+            - composer-v1-{{ checksum "www/html/laravel/composer.lock" }}
+            # 正確な一致が見つからない場合は、最新のキャッシュの使用にフォールバックします (https://circleci.com/ja/docs/2.0/caching/ を参照)
+            - composer-v1-
       - run: composer install -n --prefer-dist
-
-      - save_cache:
-          key: v1-dependencies-{{ checksum "www/html/laravel/composer.json" }}
+      - save_cache: # `composer.lock` キャッシュ キー テンプレートを使用して依存関係キャッシュを保存する特別なステップ
+          key: composer-v1-{{ checksum "www/html/laravel/composer.lock" }}
           paths:
-            - ./vendor
-
-      - run: echo "APP_KEY=" > .env.testing
-      - run: php artisan key:generate
-      - run: php artisan migrate
-
-      - run: ./vendor/bin/phpunit
+            - vendor
+      - restore_cache: # `package.json` が変更されていない場合に、依存関係キャッシュを復元する特別なステップ
+          keys:
+            - node-v1-{{ checksum "www/html/laravel/package-lock.json" }}
+            # 正確な一致が見つからない場合は、最新のキャッシュの使用にフォールバックします (https://circleci.com/ja/docs/2.0/caching/ を参照)
+            - node-v1-
+      - run: yarn install
+      - save_cache: # `package.json` キャッシュ キー テンプレートを使用して依存関係キャッシュを保存する特別なステップ
+          key: node-v1-{{ checksum "www/html/laravel/package-lock.json" }}
+          paths:
+            - node_modules
+      - run: touch storage/testing.sqlite 
+      - run: php artisan migrate --env=testing --database=sqlite_testing --force
+      - run: ./vendor/bin/phpunit build
+      - run: ./vendor/bin/phpunit run
