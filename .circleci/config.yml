@@ -4,8 +4,8 @@ jobs: # 一連のステップ
   build: # ワークフローを使用しない実行では、エントリポイントとして `build` ジョブが必要です
     docker: # Docker でステップを実行します
 
-      - image: circleci/php:7.4-node-browsers # このイメージをすべての `steps` が実行されるプライマリ コンテナとして使用します
-    working_directory: ~/circleci-test/www/laravel # ステップが実行されるディレクトリ
+      - image: circleci/php:7.1-node-browsers # このイメージをすべての `steps` が実行されるプライマリ コンテナとして使用します
+    working_directory: ~/circleci-test/www/html/laravel # ステップが実行されるディレクトリ
     steps: # 実行可能コマンドの集合
       - checkout # ソース コードを作業ディレクトリにチェックアウトする特別なステップ
       - run: sudo apt install -y libsqlite3-dev zlib1g-dev
@@ -17,7 +17,6 @@ jobs: # 一連のステップ
             # 正確な一致が見つからない場合は、最新のキャッシュの使用にフォールバックします (https://circleci.com/ja/docs/2.0/caching/ を参照)
             - composer-v1-
       - run: composer install -n --prefer-dist
-          working_directory: www/html/laravel
       - save_cache: # `composer.lock` キャッシュ キー テンプレートを使用して依存関係キャッシュを保存する特別なステップ
           key: composer-v1-{{ checksum "www/html/laravel/composer.lock" }}
           paths:
@@ -34,5 +33,5 @@ jobs: # 一連のステップ
             - node_modules
       - run: touch storage/testing.sqlite 
       - run: php artisan migrate --env=testing --database=sqlite_testing --force
-      - run: ./vendor/bin/phpunit build
-      - run: ./vendor/bin/phpunit run
+      - run: ./vendor/bin/codecept build
+      - run: ./vendor/bin/codecept run
