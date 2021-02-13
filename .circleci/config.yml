@@ -19,7 +19,7 @@ jobs:
       #
       # - image: redis:2.8.19
       environment:
-        - DB_CONNECTION: circleci_test
+        - DB_CONNECTION: circleci_testing
       working_directory: ~/laravel
 
     steps:
