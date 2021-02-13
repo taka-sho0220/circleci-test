@@ -7,8 +7,8 @@ jobs:
   build:
     docker:
       # Specify the version you desire here
-      # - image: circleci/php:7.4-node-browsers
-      # - image: circleci/mariadb:10.4
+      - image: circleci/php:7.4-node-browsers
+      - image: circleci/mariadb:10.4
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -20,7 +20,7 @@ jobs:
       # - image: redis:2.8.19
       environment:
         - DB_CONNECTION: circleci_testing
-      working_directory: ~/laravel
+      working_directory: www/html/laravel
 
     steps:
       - checkout
