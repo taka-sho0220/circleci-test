@@ -4,11 +4,11 @@ jobs: # 一連のステップ
   build: # ワークフローを使用しない実行では、エントリポイントとして `build` ジョブが必要です
     docker: # Docker でステップを実行します
 
-      - image: circleci/php:7.1-node-browsers # このイメージをすべての `steps` が実行されるプライマリ コンテナとして使用します
+      - image: circleci/php:7.4-node-browsers # このイメージをすべての `steps` が実行されるプライマリ コンテナとして使用します
     working_directory: ~/circleci-test/www/html/laravel # ステップが実行されるディレクトリ
     steps: # 実行可能コマンドの集合
       - checkout # ソース コードを作業ディレクトリにチェックアウトする特別なステップ
-      - run: sudo apt install -y libsqlite3-dev zlib1g-dev
+      - run: sudo docker-php-ext-install pdo_mysql
       - run: sudo docker-php-ext-install zip
       - run: sudo composer self-update
       - restore_cache: # `composer.lock` が変更されていない場合に、依存関係キャッシュを復元する特別なステップ
@@ -31,7 +31,7 @@ jobs: # 一連のステップ
           key: node-v1-{{ checksum "www/html/laravel/package-lock.json" }}
           paths:
             - node_modules
-      - run: touch storage/testing.sqlite 
-      - run: php artisan migrate --env=testing --database=sqlite_testing --force
-      - run: ./vendor/bin/codecept build
-      - run: ./vendor/bin/codecept run
+      # - run: touch storage/testing.mysql
+      - run: php artisan migrate --env=testing --database=circleci_test --force
+      - run: ./vendor/bin/phpunit build
+      - run: ./vendor/bin/phpunit run
