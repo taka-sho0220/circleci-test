@@ -16,7 +16,7 @@ jobs: # 一連のステップ
             - composer-v1-{{ checksum "www/html/laravel/composer.lock" }}
             # 正確な一致が見つからない場合は、最新のキャッシュの使用にフォールバックします (https://circleci.com/ja/docs/2.0/caching/ を参照)
             - composer-v1-
-      - run: composer install -n --prefer-dist
+      # - run: composer install -n --prefer-dist
       - save_cache: # `composer.lock` キャッシュ キー テンプレートを使用して依存関係キャッシュを保存する特別なステップ
           key: composer-v1-{{ checksum "www/html/laravel/composer.lock" }}
           paths:
