@@ -5,7 +5,7 @@ jobs: # 一連のステップ
     docker: # Docker でステップを実行します
 
       - image: circleci/php:7.4-node-browsers # このイメージをすべての `steps` が実行されるプライマリ コンテナとして使用します
-    working_directory: www/html/laravel # ステップが実行されるディレクトリ
+    working_directory: ~/circleci-test # ステップが実行されるディレクトリ
     steps: # 実行可能コマンドの集合
       - checkout # ソース コードを作業ディレクトリにチェックアウトする特別なステップ
       - run: sudo apt install -y libsqlite3-dev zlib1g-dev
