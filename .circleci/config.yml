@@ -8,6 +8,7 @@ jobs:
     docker:
       # Specify the version you desire here
       - image: circleci/php:7.4-node-browsers
+      - image: circleci/mariadb:10.4
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -17,12 +18,22 @@ jobs:
       # - image: circleci/mysql:5.7-ram
       #
       # - image: redis:2.8.19
+      environment:
+        - DB_CONNECTION: circleci_testing
+      working_directory: ~/laravel
 
     steps:
       - checkout
+      - run:
+          name: Update apt-get
+          command: sudo apt-get update
 
-      - run: sudo apt update # PHP CircleCI 2.0 Configuration File# PHP CircleCI 2.0 Configuration File sudo apt install zlib1g-dev libsqlite3-dev
-      - run: sudo docker-php-ext-install zip
+      - run:
+          name: Docker php extensions install
+          command: sudo docker-php-ext-install pdo_mysql
+
+      # - run: sudo apt update # PHP CircleCI 2.0 Configuration File# PHP CircleCI 2.0 Configuration File sudo apt install zlib1g-dev libsqlite3-dev
+      # - run: sudo docker-php-ext-install zip
 
       # Download and cache dependencies
       - restore_cache:
@@ -33,6 +44,7 @@ jobs:
             - v1-dependencies-
 
       - run: 
+          name: Install PHP libraries
           working_directory: www/html/laravel
           command: composer install -n --prefer-dist
 
@@ -51,10 +63,10 @@ jobs:
             - node_modules
 
       # prepare the database
-      - run: touch www/html/laravel/storage/testing.sqlite
+      - run: touch www/html/laravel
       - run: php artisan migrate --env=testing --database=sqlite_testing --force
 
       # run tests with phpunit or codecept
       #- run: ./vendor/bin/phpunit
-      - run: ./vendor/bin/codecept build
-      - run: ./vendor/bin/codecept run
+      - run: ./vendor/bin/phpunit build
+      - run: ./vendor/bin/phpunit run
