@@ -95,7 +95,7 @@ return [
             'driver' => 'mysql',
             'host' => '127.0.0.1',
             'port' => '3300',
-            'database' => 'circle_test',
+            'database' => 'circleci-test',
             'username' => 'root',
             'password' => 'secret',
             'charset' => 'utf8mb4',
