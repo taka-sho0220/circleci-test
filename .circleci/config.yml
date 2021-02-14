@@ -1,60 +1,36 @@
-# PHP CircleCI 2.0 configuration file
-#
-# Check https://circleci.com/docs/2.0/language-php/ for more details
-#
-version: 2
-jobs:
-  build:
-    docker:
-      # Specify the version you desire here
-      - image: circleci/php:7.4-node-browsers
+version: 2 # CircleCI 2.0 を使用します
 
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # Using the RAM variation mitigates I/O contention
-      # for database intensive operations.
-      # - image: circleci/mysql:5.7-ram
-      #
-      # - image: redis:2.8.19
+jobs: # 一連のステップ
+  build: # ワークフローを使用しない実行では、エントリポイントとして `build` ジョブが必要です
+    docker: # Docker でステップを実行します
 
-    steps:
-      - checkout
-
-      - run: sudo apt update # PHP CircleCI 2.0 Configuration File# PHP CircleCI 2.0 Configuration File sudo apt install zlib1g-dev libsqlite3-dev
+      - image: circleci/php:7.4-node-browsers # このイメージをすべての `steps` が実行されるプライマリ コンテナとして使用します
+    # working_directory: ~/ # ステップが実行されるディレクトリ
+    steps: # 実行可能コマンドの集合
+      - checkout # ソース コードを作業ディレクトリにチェックアウトする特別なステップ
+      - run: sudo docker-php-ext-install pdo_mysql
       - run: sudo docker-php-ext-install zip
-
-      # Download and cache dependencies
-      - restore_cache:
+      - run: sudo composer self-update
+      - restore_cache: # `composer.lock` が変更されていない場合に、依存関係キャッシュを復元する特別なステップ
           keys:
-            # "composer.lock" can be used if it is committed to the repo
-            - v1-dependencies-{{ checksum "www/html/laravel/composer.json" }}
-            # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-
-
-      - run: 
-          working_directory: www/html/laravel
-          command: composer install -n --prefer-dist
-
-      - save_cache:
-          key: v1-dependencies-{{ checksum "www/html/laravel/composer.json" }}
+            - composer-v1-{{ checksum "www/html/laravel/composer.lock" }}
+            # 正確な一致が見つからない場合は、最新のキャッシュの使用にフォールバックします (https://circleci.com/ja/docs/2.0/caching/ を参照)
+            - composer-v1-
+      # - run: composer install -n --prefer-dist
+      - save_cache: # `composer.lock` キャッシュ キー テンプレートを使用して依存関係キャッシュを保存する特別なステップ
+          key: composer-v1-{{ checksum "www/html/laravel/composer.lock" }}
           paths:
-            - ./vendor
-      - restore_cache:
+            - vendor
+      - restore_cache: # `package.json` が変更されていない場合に、依存関係キャッシュを復元する特別なステップ
           keys:
-            - node-v1-{{ checksum "www/html/laravel/package.json" }}
+            - node-v1-{{ checksum "www/html/laravel/package-lock.json" }}
+            # 正確な一致が見つからない場合は、最新のキャッシュの使用にフォールバックします (https://circleci.com/ja/docs/2.0/caching/ を参照)
             - node-v1-
       - run: yarn install
-      - save_cache:
-          key: node-v1-{{ checksum "www/html/laravel/package.json" }}
+      - save_cache: # `package.json` キャッシュ キー テンプレートを使用して依存関係キャッシュを保存する特別なステップ
+          key: node-v1-{{ checksum "www/html/laravel/package-lock.json" }}
           paths:
-            - node_modules
+            - ./vender
 
-      # prepare the database
-      - run: touch www/html/laravel/storage/testing.sqlite
-      - run: php artisan migrate --env=testing --database=sqlite_testing --force
-
-      # run tests with phpunit or codecept
-      #- run: ./vendor/bin/phpunit
-      - run: ./vendor/bin/codecept build
-      - run: ./vendor/bin/codecept run
+      # - run: ./www/html/laravel/vendor/bin/phpunit build
+      # - run: ./www/html/laravel/vendor/bin/phpunit run
