@@ -4,8 +4,8 @@ jobs: # 一連のステップ
   build: # ワークフローを使用しない実行では、エントリポイントとして `build` ジョブが必要です
     docker: # Docker でステップを実行します
 
-      - image: circleci/php:latest # このイメージをすべての `steps` が実行されるプライマリ コンテナとして使用します
-    working_directory: ~/circleci-test/www/html/laravel/ # ステップが実行されるディレクトリ
+      - image: circleci/php:7.4-node-browsers # このイメージをすべての `steps` が実行されるプライマリ コンテナとして使用します
+    working_directory: ~/ci-demo # ステップが実行されるディレクトリ
     steps: # 実行可能コマンドの集合
       - checkout # ソース コードを作業ディレクトリにチェックアウトする特別なステップ
       - run: sudo docker-php-ext-install pdo_mysql
@@ -30,8 +30,7 @@ jobs: # 一連のステップ
       - save_cache: # `package.json` キャッシュ キー テンプレートを使用して依存関係キャッシュを保存する特別なステップ
           key: node-v1-{{ checksum "package-lock.json" }}
           paths:
-            - node_modules
-      - run: touch www/html/laravel/storage/testing.mysql
-      - run: php artisan migrate --env=testing --database=circleci_test --force
+            - ./vender
+
       - run: ./vendor/bin/phpunit build
       - run: ./vendor/bin/phpunit run
