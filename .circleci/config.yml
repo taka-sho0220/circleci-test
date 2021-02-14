@@ -32,5 +32,5 @@ jobs: # 一連のステップ
           paths:
             - ./vender
 
-      - run: ./vendor/bin/phpunit build
-      - run: ./vendor/bin/phpunit run
+      - run: ./www/html/laravel/vendor/bin/phpunit build
+      - run: ./www/html/laravel/vendor/bin/phpunit run
